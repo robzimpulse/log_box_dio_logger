@@ -1,7 +1,7 @@
 # log_box_dio_logger Context
 
 ## Purpose:
-This directory contains a specialized plugin for the LogBox ecosystem that provides automated network logging for the Dio HTTP client. It intercepts requests, responses, and errors, converting them into structured `NetworkEntryModel` data for display and storage.
+This repository contains a specialized plugin for the LogBox ecosystem that provides automated network logging for the Dio HTTP client. It intercepts requests, responses, and errors, converting them into structured `NetworkEntryModel` data for display and storage.
 
 ## Key Components:
 - **lib/src/interceptor/log_box_network_interceptor.dart**: The core logic of the package. It implements a Dio `Interceptor` to capture network traffic and send it to the LogBox storage.
@@ -22,3 +22,12 @@ This directory contains a specialized plugin for the LogBox ecosystem that provi
 - **Reactive Stream Handling**: When dealing with `ResponseBody` streams in Dio, the interceptor uses `ReplaySubject` from RxDart to capture data without consuming the stream for the original caller.
 - **Model Partitioning**: Detailed HTTP data is sharded into `HttpRequestModel`, `HttpResponseModel`, and `HttpErrorModel` to maintain clean separation of concerns within a `NetworkEntryModel`.
 - **Automated Serialization**: All models in `lib/src/model/` must use `json_serializable` and have corresponding `.g.dart` files generated.
+
+## Development:
+- **Commands**: Use the `Makefile` (`make` lists targets). `make analyze` and `make format-check` must pass — CI enforces both (infos are fatal).
+- **Code Generation**: Run `make generate` after modifying `@JsonSerializable` models; commit the `.g.dart` files.
+- **Releasing**: Bump `version:` in `pubspec.yaml` and add a matching `## <version>` section to `CHANGELOG.md` in the same PR; merging creates tag `v<version>` via `release.yaml`.
+
+## Known Pitfalls:
+- **Cross-Repo Dependency Bumps**: `log_box` is pinned by git tag (`ref: v<version>`), so CI never sees an unreleased core change. For a shared-constraint bump (e.g. rxdart), land and release it in [log_box](https://github.com/robzimpulse/log_box) first, then update `ref:` and the constraint here in its own PR. See core's `AGENTS.md` → "Cross-Repo Dependency Bumps".
+- **Pushing Workflow Changes**: Pushing files under `.github/workflows/` requires a GitHub token with the `workflow` scope. If a push is rejected with "refusing to allow an OAuth App to create or update workflow", run `gh auth refresh -h github.com -s workflow` and make git use that token (`gh auth setup-git`) — a stale macOS Keychain token will otherwise keep failing.
