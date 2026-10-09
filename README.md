@@ -1,39 +1,43 @@
-<!--
-This README describes the package. If you publish this package to pub.dev,
-this README's contents appear on the landing page for your package.
+# log_box_dio_logger
 
-For information about how to write a good package README, see the guide for
-[writing package pages](https://dart.dev/tools/pub/writing-package-pages).
+LogBox extension that captures Dio HTTP requests, responses and errors as structured network log entries.
 
-For general information about developing packages, see the Dart guide for
-[creating packages](https://dart.dev/guides/libraries/create-packages)
-and the Flutter guide for
-[developing packages and plugins](https://flutter.dev/to/develop-packages).
--->
+Part of the [LogBox](https://github.com/robzimpulse/log_box) logging framework. See the LogBox README for setup and the [example app](https://github.com/robzimpulse/log_box/tree/master/example) for a full integration.
 
-TODO: Put a short description of the package here that helps potential users
-know whether this package might be useful for them.
+## Installation
 
-## Features
+Not published to pub.dev; depend on it via a git tag together with the core package:
 
-TODO: List what your package can do. Maybe include images, gifs, or videos.
-
-## Getting started
-
-TODO: List prerequisites and provide or point to information on how to
-start using the package.
-
-## Usage
-
-TODO: Include short and useful examples for package users. Add longer examples
-to `/example` folder.
-
-```dart
-const like = 'sample';
+```yaml
+dependencies:
+  log_box:
+    git:
+      url: https://github.com/robzimpulse/log_box.git
+      ref: v0.1.0
+  log_box_dio_logger:
+    git:
+      url: https://github.com/robzimpulse/log_box_dio_logger.git
+      ref: v0.0.1
 ```
 
-## Additional information
+## Development
 
-TODO: Tell users more about the package: where to find more information, how to
-contribute to the package, how to file issues, what response they can expect
-from the package authors, and more.
+Requires Flutter 3.32.8 (pinned in `.fvmrc`, use [FVM](https://fvm.app)) and `make`. Run `make` to list targets.
+
+```bash
+make get                 # fetch dependencies
+make test                # unit tests
+make coverage            # unit tests with coverage/lcov.info
+make analyze             # static analysis
+make format-check        # formatting check (make format to fix)
+make generate            # build_runner code generation
+```
+
+Pass `FLUTTER="fvm flutter"` / `DART="fvm dart"` to use the FVM-pinned SDK.
+
+CI (`.github/workflows/unit-test.yaml`) runs tests, coverage diff and lint on every PR and push to `master`.
+
+## Releasing
+
+1. In a PR, bump `version:` in `pubspec.yaml` and add a matching `## <version>` section to `CHANGELOG.md`.
+2. Merge it. `.github/workflows/release.yaml` runs the release gate (analyze, format check, tests) and creates the `v<version>` tag and GitHub Release.
