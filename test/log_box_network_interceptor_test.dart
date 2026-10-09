@@ -9,12 +9,20 @@ import 'package:log_box_dio_logger/src/model/network_entry_model.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockStorage extends Mock implements Storage {}
-class MockRequestInterceptorHandler extends Mock implements RequestInterceptorHandler {}
-class MockResponseInterceptorHandler extends Mock implements ResponseInterceptorHandler {}
-class MockErrorInterceptorHandler extends Mock implements ErrorInterceptorHandler {}
+
+class MockRequestInterceptorHandler extends Mock
+    implements RequestInterceptorHandler {}
+
+class MockResponseInterceptorHandler extends Mock
+    implements ResponseInterceptorHandler {}
+
+class MockErrorInterceptorHandler extends Mock
+    implements ErrorInterceptorHandler {}
 
 class RequestOptionsFake extends Fake implements RequestOptions {}
+
 class ResponseFake extends Fake implements Response {}
+
 class DioExceptionFake extends Fake implements DioException {}
 
 void main() {
@@ -31,7 +39,9 @@ void main() {
   setUp(() {
     mockStorage = MockStorage();
     interceptor = LogBoxNetworkInterceptor(storage: mockStorage);
-    when(() => mockStorage.add(log: any(named: 'log'))).thenAnswer((_) async {});
+    when(
+      () => mockStorage.add(log: any(named: 'log')),
+    ).thenAnswer((_) async {});
   });
 
   group('onRequest', () {
@@ -42,7 +52,11 @@ void main() {
 
       interceptor.onRequest(options, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.request?.size, 0);
       expect(captured.request?.body, isNull);
     });
@@ -59,7 +73,11 @@ void main() {
 
       interceptor.onRequest(options, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.request?.size, utf8.encode(data.toString()).length);
       expect(captured.request?.body, jsonEncode(data));
     });
@@ -79,7 +97,11 @@ void main() {
 
       interceptor.onRequest(options, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.request?.formDataFields?.length, 1);
       expect(captured.request?.formDataFiles?.length, 1);
       expect(captured.request?.body, jsonEncode({'field1': 'value1'}));
@@ -99,7 +121,11 @@ void main() {
 
       interceptor.onRequest(options, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.request?.formDataFields, isNull);
       expect(captured.request?.body, contains('FormData'));
     });
@@ -121,16 +147,21 @@ void main() {
 
       interceptor.onResponse(response, handler);
 
-      final capturedResponse = verify(() => handler.next(captureAny())).captured.first as Response;
+      final capturedResponse =
+          verify(() => handler.next(captureAny())).captured.first as Response;
       final newResponseBody = capturedResponse.data as ResponseBody;
-      
+
       // Consume the stream to trigger whenComplete in the interceptor
       await newResponseBody.stream.toList();
 
       // Wait for the async storage.add inside whenComplete
       await untilCalled(() => mockStorage.add(log: any(named: 'log')));
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.response?.body, jsonEncode(bytes));
       expect(captured.response?.size, bytes.length);
     });
@@ -148,7 +179,11 @@ void main() {
 
       interceptor.onResponse(response, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.response?.body, jsonEncode(data));
       expect(captured.response?.size, utf8.encode(data.toString()).length);
     });
@@ -165,7 +200,11 @@ void main() {
 
       interceptor.onResponse(response, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.response?.body, isNull);
       expect(captured.response?.size, 0);
     });
@@ -177,29 +216,39 @@ void main() {
       final error = DioException(
         requestOptions: options,
         error: 'err',
-        response: Response(requestOptions: options, data: 'error body', statusCode: 500, headers: Headers()),
+        response: Response(
+          requestOptions: options,
+          data: 'error body',
+          statusCode: 500,
+          headers: Headers(),
+        ),
       );
       final handler = MockErrorInterceptorHandler();
       when(() => handler.next(any())).thenReturn(null);
 
       interceptor.onError(error, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.response?.body, 'error body');
     });
 
     test('captures DioException without response', () {
       final options = RequestOptions(path: 'https://example.com');
-      final error = DioException(
-        requestOptions: options,
-        error: 'err',
-      );
+      final error = DioException(requestOptions: options, error: 'err');
       final handler = MockErrorInterceptorHandler();
       when(() => handler.next(any())).thenReturn(null);
 
       interceptor.onError(error, handler);
 
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.first as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.first
+              as NetworkEntryModel;
       expect(captured.response?.status, isNull);
       expect(captured.response?.body, isNull);
     });
@@ -208,65 +257,137 @@ void main() {
   group('_rawJson helper', () {
     test('Map<String, dynamic>', () {
       final data = <String, dynamic>{'a': 1};
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, jsonEncode(data));
     });
 
     test('empty Map<String, dynamic>', () {
       final data = <String, dynamic>{};
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, isNull);
     });
 
     test('List<dynamic>', () {
       final data = [1, 2];
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, jsonEncode(data));
     });
 
     test('empty List<dynamic>', () {
       final data = <dynamic>[];
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, isNull);
     });
 
     test('non-empty String', () {
       final data = 'hello';
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, 'hello');
     });
 
     test('empty String', () {
       final data = '';
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, isNull);
     });
 
     test('other type (int)', () {
       final data = 123;
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, '123');
     });
-    
+
     test('Map<dynamic, dynamic> falls to toString()', () {
       final data = {1: 2};
-      final response = Response(requestOptions: RequestOptions(path: ''), data: data, statusCode: 200, headers: Headers());
+      final response = Response(
+        requestOptions: RequestOptions(path: ''),
+        data: data,
+        statusCode: 200,
+        headers: Headers(),
+      );
       interceptor.onResponse(response, MockResponseInterceptorHandler());
-      final captured = verify(() => mockStorage.add(log: captureAny(named: 'log'))).captured.last as NetworkEntryModel;
+      final captured =
+          verify(
+                () => mockStorage.add(log: captureAny(named: 'log')),
+              ).captured.last
+              as NetworkEntryModel;
       expect(captured.response?.body, '{1: 2}');
     });
   });
